@@ -10,7 +10,7 @@ const ACCESS_TOKEN_EXPIRATION = '1h';
 const REFRESH_TOKEN_EXPIRATION = '7d';
 
 async function signup(email, password, username, major, phone, studentId, grade, interests) {
-  console.log(`🔍 [authService] signup called with params:`, { email, username, major, phone, studentId, grade, gradeType: typeof grade });
+  console.log(`[authService] signup called with params:`, { email, username, major, phone, studentId, grade, gradeType: typeof grade });
 
   if (await User.findOne({ where: { email } })) {
     throw new Error('이미 존재하는 이메일입니다.');
@@ -22,11 +22,11 @@ async function signup(email, password, username, major, phone, studentId, grade,
   // UserProfile 레코드도 함께 생성 (student_id, grade 포함)
   const { UserProfile } = require('../models');
   const gradeValue = Number(grade) || 1;  // 명시적으로 숫자 변환
-  console.log(`🔍 [authService] Creating UserProfile with grade: ${gradeValue} (type: ${typeof gradeValue})`);
+  console.log(`[authService] Creating UserProfile with grade: ${gradeValue} (type: ${typeof gradeValue})`);
 
   try {
     await UserProfile.create({
-      user_id: u.id,
+      userId: u.id,
       name: username,
       student_id: studentId || '',  // student_id 필드 추가
       major: major,
@@ -44,7 +44,7 @@ async function signup(email, password, username, major, phone, studentId, grade,
     throw err;
   }
 
-  console.log(`✅ UserProfile created for user ${u.id} with student_id: ${studentId}, grade: ${gradeValue}`);
+  console.log(`UserProfile created for user ${u.id} with student_id: ${studentId}, grade: ${gradeValue}`);
 
   return { userId: u.id, email: u.email, username: username, major: u.major, phone: u.phone, studentId: studentId, grade: gradeValue, createdAt: u.createdAt };
 }
@@ -255,5 +255,5 @@ module.exports = {
   sendPasswordReset, verifyPhoneNumber, logout,
   recoverIdByPhone, recoverPasswordByEmail,
   registerSocialUser,
-  findOrCreateUser // ✅ 여기 반드시 포함!
+  findOrCreateUser // 여기 반드시 포함!
 };
