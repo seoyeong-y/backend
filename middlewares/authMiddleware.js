@@ -25,7 +25,7 @@ module.exports = (req, res, next) => {
 
     // 4. JWT 검증
     const decoded = jwt.verify(token, secretKey);
-    console.log('Decoded JWT:', decoded);
+    // console.log('Decoded JWT:', decoded);
 
     // 5. 필수 데이터 검증
     if (!decoded.userId) {

@@ -152,6 +152,7 @@ sessions/
 # Local configuration files
 config/local.js
 config/local.json
+config/google-vision-service-account.json
 
 # Coverage directory used by tools like istanbul
 coverage/

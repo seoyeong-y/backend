@@ -9,8 +9,16 @@ const passport = require('passport');
 require('./service/googleStrategy');
 const PORT = process.env.PORT || 3000;
 
+const fileUpload = require('express-fileupload');
+
+
 /* 기본 설정 */
 app.use(cors({ origin: 'http://localhost:3001', credentials: true }));
+app.use(fileUpload({
+  useTempFiles: false,
+  tempFileDir: '/tmp/',
+  createParentPath: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
