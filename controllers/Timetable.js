@@ -34,6 +34,25 @@ router.get('/semester/:semester', authMiddleware, async (req, res) => {
     }
 });
 
+// DELETE /timetable/semester/:semester - 특정 학기 시간표 삭제
+router.delete('/semester/:semester', authMiddleware, async (req, res) => {
+    try {
+        const { semester } = req.params;
+        const success = await TimetableService.delete(req.user.userId, semester, 'semester');
+        
+        if (!success) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Timetable not found for this semester' 
+            });
+        }
+        
+        res.json({ success: true, message: 'Timetable deleted successfully' });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message });
+    }
+});
+
 // POST /timetable - 새 시간표 생성
 router.post('/', authMiddleware, async (req, res) => {
     try {
@@ -115,7 +134,7 @@ router.get('/all', authMiddleware, async (req, res) => {
     }
 });
 
-// POST /timetable/save (기존 호환성 유지)
+// POST /timetable/save
 router.post('/save', authMiddleware, async (req, res) => {
     try {
         const saved = await TimetableService.save(req.user.userId, req.body, { includeSlots: true });

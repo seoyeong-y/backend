@@ -1,4 +1,3 @@
-// service/TimetableService.js
 const { Schedule, TimetableSlot, CustomEvent, LectureCode, Sequelize } = require('../models');
 
 class TimetableService {
@@ -16,7 +15,19 @@ class TimetableService {
             where: whereCondition,
             order: [['updated_at', 'DESC']],
             include: [
-                { model: TimetableSlot, as: 'TimetableSlots', required: false },
+                { 
+                    model: TimetableSlot, 
+                    as: 'TimetableSlots', 
+                    required: false,
+                    include: [
+                        {
+                            model: LectureCode,
+                            as: 'LectureCode',
+                            required: false,
+                            attributes: ['id', 'code', 'name']
+                        }
+                    ]
+                },
                 { model: CustomEvent, as: 'CustomEvents', required: false }
             ],
             logging: console.log 
@@ -25,7 +36,7 @@ class TimetableService {
         return schedule;
     }
 
-    // ===== 시간/강의실 파싱 =====
+    // 시간/강의실 파싱
     static parseTimeAndRoom(timeRoomStr) {
         if (!timeRoomStr || typeof timeRoomStr !== 'string') {
             console.warn("[parseTimeAndRoom] Invalid timeRoomStr:", timeRoomStr);
@@ -67,7 +78,7 @@ class TimetableService {
         return results;
     }
 
-    // ===== Excel 과목 데이터 파싱 =====
+    // Excel 과목 데이터 파싱
     static async parseExcelCourse(excelRow, transaction) {
         try {
             const courseCode = excelRow['강좌번호'] || excelRow['강좌번호▲'] || excelRow['강좌번호▼'];  
@@ -157,12 +168,25 @@ class TimetableService {
         console.log('[DEBUG] getBySemester where:', { userId, semester });
         const schedule = await Schedule.findOne({
             where: { userId, semesterCode: semester },
-            include: [{ model: TimetableSlot, as: 'TimetableSlots', required: false }],
+            include: [
+                { 
+                    model: TimetableSlot, 
+                    as: 'TimetableSlots', 
+                    required: false,
+                    include: [
+                        {
+                            model: LectureCode,
+                            as: 'LectureCode',
+                            required: false,
+                            attributes: ['id', 'code']
+                        }
+                    ]
+                }
+            ],
         });
         console.log('[DEBUG] getBySemester result:', schedule);
         return schedule;
     }
-
 
     // 연강 처리 함수
     static mergeConsecutivePeriods(timeInfos) {
@@ -329,14 +353,27 @@ class TimetableService {
         }
     }
 
-    static async delete(userId, scheduleId) {
+    static async delete(userId, identifier, type = 'id') {
         const transaction = await Schedule.sequelize.transaction();
         try {
-            const schedule = await Schedule.findOne({ where: { id: scheduleId, userId }, transaction });
+            let schedule;
+            
+            if (type === 'semester') {
+                schedule = await Schedule.findOne({ 
+                    where: { userId, semesterCode: identifier }, 
+                    transaction 
+                });
+            } else {
+                schedule = await Schedule.findOne({ 
+                    where: { id: identifier, userId }, 
+                    transaction 
+                });
+            }
+            
             if (!schedule) return false;
 
-            await TimetableSlot.destroy({ where: { scheduleId }, transaction });
-            await CustomEvent.destroy({ where: { scheduleId }, transaction });
+            await TimetableSlot.destroy({ where: { scheduleId: schedule.id }, transaction });
+            await CustomEvent.destroy({ where: { scheduleId: schedule.id }, transaction });
             await schedule.destroy({ transaction });
 
             await transaction.commit();
@@ -377,14 +414,26 @@ class TimetableService {
     }
 
     static async getScheduleById(id) {
-        const schedule = await Schedule.findByPk(id, {
-            include: [
-                { model: TimetableSlot, as: 'TimetableSlots', required: false },
-                { model: CustomEvent, as: 'CustomEvents', required: false }
-            ]
-        });
-        return schedule;
-    }
+    const schedule = await Schedule.findByPk(id, {
+        include: [
+            { 
+                model: TimetableSlot, 
+                as: 'TimetableSlots', 
+                required: false,
+                include: [
+                    {
+                        model: LectureCode,
+                        as: 'LectureCode',
+                        required: false,
+                        attributes: ['id', 'code']
+                    }
+                ]
+            },
+            { model: CustomEvent, as: 'CustomEvents', required: false }
+        ]
+    });
+    return schedule;
+}
 
 
     static generateCourseColor(courseName) {
