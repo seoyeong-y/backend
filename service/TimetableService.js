@@ -40,8 +40,6 @@ class TimetableService {
         };
         const results = [];
 
-        // 정규식: "목 [1~2] 09:30~11:20 (D동215호)" 형태 매칭
-        // 괄호 안의 강의실은 선택적
         const pattern = /(월|화|수|목|금|토|일)\s*\[(\d+)(?:~(\d+))?\]\s*(\d{2}:\d{2})~(\d{2}:\d{2})\s*(?:\(([^)]*)\))?/g;
         
         let match;
@@ -72,13 +70,19 @@ class TimetableService {
     // ===== Excel 과목 데이터 파싱 =====
     static async parseExcelCourse(excelRow, transaction) {
         try {
-            const courseCode = excelRow['강좌번호']; 
-            const courseName = excelRow['과목명'];   
-            const timeRoomStr = excelRow['시간/강의실▲']; 
-            const instructor = excelRow['담당교수']; 
-            const credits = parseInt(excelRow['학점']) || 3; 
-            const classification = excelRow['이수구분'];
+            const courseCode = excelRow['강좌번호'] || excelRow['강좌번호▲'] || excelRow['강좌번호▼'];  
+            const courseName = excelRow['과목명'] || excelRow['과목명▲'] || excelRow['과목명▼']; 
+            const timeRoomStr = excelRow['시간/강의실'] || excelRow['시간/강의실▲'] || excelRow['시간/강의실▼']; 
+            const instructor = excelRow['담당교수'] || excelRow['담당교수▲'] || excelRow['담당교수▼'];
+            const creditsRaw = excelRow['학점'] || excelRow['학점▲'] || excelRow['학점▼'];
+            const credits = creditsRaw ? parseInt(creditsRaw) : null;
+            const classification = excelRow['이수구분'] || excelRow['이수구분▲'] || excelRow['이수구분▼'];
 
+            if (!courseCode || !courseName || !credits || isNaN(credits) || 
+                courseCode.includes('총건수')) {
+                return null;
+            }
+            
             console.log(`[parseExcelCourse] Processing: ${courseCode} - ${courseName}`);
             console.log(`[parseExcelCourse] Classification: ${classification}, Credits: ${credits}`);
             console.log(`[parseExcelCourse] Time/Room: "${timeRoomStr}"`);
@@ -223,8 +227,8 @@ class TimetableService {
 
     // 색상 배정 함수
     static assignSemesterColors(slots) {
-        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-                        '#DDA0DD', '#98D8E8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#ffde74ff',
+                        '#DDA0DD', '#98D8E8', '#ffb65eff', '#BB8FCE', '#85C1E9'];
         const courseColorMap = {};
         let colorIndex = 0;
 
