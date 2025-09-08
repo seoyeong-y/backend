@@ -12,7 +12,7 @@ db.Curriculum = require('./curriculum')(sequelize, Sequelize.DataTypes);
 db.LectureCode = require('./lectureCode')(sequelize, Sequelize.DataTypes);
 db.Lecture = require('./lecture')(sequelize, Sequelize.DataTypes);
 db.LectureHistory = require('./lectureHistory')(sequelize, Sequelize.DataTypes);
-db.Records = require('./records')(sequelize, Sequelize.DataTypes);
+db.Records = require('./Records')(sequelize, Sequelize.DataTypes);
 db.Certificate = require('./certificate')(sequelize, Sequelize.DataTypes);
 db.UserCredits = require('./userCredits')(sequelize, Sequelize.DataTypes);
 db.Timetable = require('./timetable')(sequelize, Sequelize.DataTypes);
@@ -21,6 +21,7 @@ db.RequiredCredit = require('./requiredCredit')(sequelize, Sequelize.DataTypes);
 db.Review = require('./Review')(sequelize, Sequelize.DataTypes);
 db.Opinion = require('./opinion')(sequelize, Sequelize.DataTypes);
 db.RecentLecture = require('./recentLecture')(sequelize, Sequelize.DataTypes);
+db.LectureReplacement = require('./lectureReplacement')(sequelize, Sequelize.DataTypes);
 
 // Register new user-related models
 
